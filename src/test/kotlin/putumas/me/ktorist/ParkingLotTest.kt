@@ -1,8 +1,8 @@
 package putumas.me.ktorist
 
+import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.gson.*
 import io.ktor.server.testing.*
@@ -21,12 +21,12 @@ class ParkingLotTest {
             contentType(ContentType.Application.Json)
             setBody(Vehicle(type = Kind.VAN))
         }
-        val text = resp.bodyAsText()
+        val status = resp.body<Status>()
         assertEquals(HttpStatusCode.Created, resp.status)
         assertEquals(
-            "VAN is parked",
-            resp.bodyAsText(),
-            message = "Expecting Customer stored correctly got $text"
+            "Vehicle VAN is parked",
+            status.message,
+            message = "Expecting Customer stored correctly got ${status.message}"
         )
 
     }

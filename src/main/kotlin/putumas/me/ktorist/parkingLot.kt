@@ -23,7 +23,11 @@ fun Application.parkingLot() {
         post("/park") {
             val aVehicle = call.receive<Vehicle>()
             call.application.environment.log.info("receive $aVehicle")
-            call.respondText("${aVehicle.type} is parked", status = HttpStatusCode.Created)
+            // call.respondText("${aVehicle.type} is parked", status = HttpStatusCode.Created)
+            call.respond(
+                message = Status("Vehicle ${aVehicle.type} is parked", time = aVehicle.time),
+                status = HttpStatusCode.Created
+            )
         }
     }
 }
