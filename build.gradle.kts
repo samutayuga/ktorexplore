@@ -35,17 +35,21 @@ repositories {
 dependencies {
     implementation("io.ktor:ktor-server-core:$ktor_version")
     implementation("io.ktor:ktor-server-netty:$ktor_version")
+    implementation("io.ktor:ktor-server-content-negotiation:$ktor_version")
+    implementation("io.ktor:ktor-serialization-gson:$ktor_version")
     //implementation("io.ktor:ktor-metrics-micrometer:$ktor_version")
     //implementation("io.micrometer:micrometer-registry-prometheus:latest.release")
     implementation("io.ktor:ktor-serialization:$ktor_version")
    // implementation("com.github.papsign:Ktor-OpenAPI-Generator:$open_api_version")
     //implementation("io.ktor:ktor-serialization:$ktor_version")
     //implementation("io.ktor:ktor-client-apache:$ktor_version")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktor_version")
     implementation("io.ktor:ktor-client-cio:$ktor_version")
     implementation("io.ktor:ktor-client-core:$ktor_version")
     implementation("io.ktor:ktor-client-mock:$ktor_version")
     implementation("io.ktor:ktor-client-gson:$ktor_version")
     implementation("io.ktor:ktor-client-logging-jvm:$ktor_version")
+    implementation("io.ktor:ktor-server-auto-head-response:$ktor_version")
 
     //implementation("io.ktor:ktor-gson:$ktor_version")
 
@@ -54,7 +58,7 @@ dependencies {
     implementation("io.github.resilience4j:resilience4j-retry:$resilience4jVersion")
     implementation("org.yaml:snakeyaml:$snake_yaml_version")
 
-    testImplementation("io.ktor:ktor-server-tests:$ktor_version")
+    testImplementation("io.ktor:ktor-server-test-host:$ktor_version")
     testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlin_version")
     testImplementation("io.mockk:mockk:$mockk_version")
     testImplementation(platform("org.junit:junit-bom:5.8.0"))
