@@ -9,18 +9,15 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import java.text.DateFormat
 
-object LotManager {
+class LotManager {
 
-    init {
-
-    }
-
-    fun checkAvailibility(kind: Kind): Boolean {
+    fun checkAvailibility(type: Kind = Kind.VAN): Boolean {
         return false
     }
 }
 
-fun Application.parkingLot() {
+
+fun Application.parkingLot(lotManager: () -> LotManager) {
     install(ContentNegotiation) {
         gson {
             setDateFormat(DateFormat.LONG)
@@ -33,7 +30,7 @@ fun Application.parkingLot() {
         post("/parking") {
             val aVehicle = call.receive<Vehicle>()
             call.application.environment.log.info("receive $aVehicle")
-            if (LotManager.checkAvailibility(aVehicle.type)) {
+            if (lotManager().checkAvailibility(aVehicle.type)) {
 
                 // call.respondText("${aVehicle.type} is parked", status = HttpStatusCode.Created)
                 call.respond(

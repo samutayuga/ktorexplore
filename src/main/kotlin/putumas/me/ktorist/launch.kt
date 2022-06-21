@@ -1,32 +1,36 @@
 package putumas.me.ktorist
 
-import io.ktor.server.application.*
+import com.typesafe.config.ConfigFactory
+import io.ktor.server.config.*
+import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import io.ktor.server.plugins.autohead.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import org.slf4j.LoggerFactory
 
-fun main(args: Array<String>): Unit = EngineMain.main(args = args)
-fun Application.spot() {
-    install(AutoHeadResponse)
-    val portNum = environment.config.propertyOrNull("ktor.deployment.port")
-    log.info("Hello from spot module!")
+/**
+ * There is an issue with testability when implementing the launcher with Enginemain.
+ * It is not possible to mock the underlying class or object
+ * for the server internally.
+ * For example when testing the route, where the route will use one or many layer to implement
+ * business logic.
+ * As long as the routing testing is a concern
+ * we do not need to have the actual business logic
+ * It can be a mock. That is the purpose of unit test
+ */
+fun main() {
+    embeddedServer(Netty, environment = applicationEngineEnvironment {
+        log = LoggerFactory.getLogger("ktor.application")
+        config = HoconApplicationConfig(ConfigFactory.load())
+        module {
 
-    routing {
-        get("/spots") {
-            call.application.environment.log.info("Hello from /api/v1!")
-            call.respondText("Listtening on port $portNum")
+            /**
+             * partking lot relies on underlying function to do the
+             * job. An that is to be a mock for the unit test
+             * So, we need to be able to make the
+             */
+            parkingLot { LotManager() }
         }
-    }
-}
-
-fun Application.lot() {
-    val portNum = environment.config.propertyOrNull("ktor.deployment.port")
-    log.info("Hello from lot module!")
-    routing {
-        get("/lots") {
-            call.application.environment.log.info("Hello from /api/v1!")
-            call.respondText("Listtening on port $portNum")
+        connector {
+            port = 8080
         }
-    }
+    }).start(true)
 }

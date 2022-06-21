@@ -6,26 +6,73 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.gson.*
 import io.ktor.server.testing.*
-import io.mockk.every
-import io.mockk.mockkObject
-import io.mockk.unmockkObject
-import io.mockk.verify
+import io.mockk.*
 import java.time.Instant
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.*
+
+enum class TestCase {
+    NOLOT,
+    LOTAVAILABLE;
+
+}
+
+typealias LotManagerMocker = (TestCase) -> LotManager
+typealias LotManagerMockerVerifier = (TestCase, LotManager) -> Unit
+
+val lotManagerMocker: LotManagerMocker = {
+    unmockkAll()
+    val lotManager = mockk<LotManager>()
+    when (it) {
+        TestCase.NOLOT -> {
+            every { lotManager.checkAvailibility(Kind.VAN) } returns false
+            lotManager
+        }
+        else -> {
+            every { lotManager.checkAvailibility(Kind.VAN) } returns true
+            lotManager
+        }
+
+
+    }
+}
+val lotManagerMockerVerifier: LotManagerMockerVerifier = { testCase, lotManager ->
+    when (testCase) {
+        TestCase.NOLOT -> {
+            verify(exactly = 1) { lotManager.checkAvailibility(Kind.VAN) }
+        }
+        else -> {
+            verify(exactly = 1) { lotManager.checkAvailibility(Kind.VAN) }
+        }
+
+
+    }
+}
 
 class ParkingLotTest {
+    var lotManager: LotManager? = null
+
     @BeforeTest
-    fun afterTest() {
-        unmockkObject(LotManager)
+    fun beforeTest() {
+
+
     }
 
+    @AfterTest
+    fun afterTest() {
+
+    }
+
+    /**
+     * This is nominal test case for parking
+     * The parking lot is available
+     */
     @Test
-    fun testPark() = testApplication {
-        mockkObject(LotManager)
-        every { LotManager.checkAvailibility(Kind.VAN) } returns true
+    fun testParkingAvailable() = testApplication {
+        lotManager = lotManagerMocker(TestCase.LOTAVAILABLE)
+        application {
+            parkingLot { lotManager!! }
+        }
+        // LotManager.spotsLoader = spotLoader
 
         val currentTime: Long = Instant.now().toEpochMilli()
         val client = createClient {
@@ -33,19 +80,55 @@ class ParkingLotTest {
                 gson()
             }
         }
-        val resp = client.post("/parking") {
+        client.post("/parking") {
             contentType(ContentType.Application.Json)
             setBody(Vehicle(type = Kind.VAN))
-        }
-        val status = resp.body<Status>()
-        assertEquals(HttpStatusCode.Created, resp.status)
+        }.apply {
+            val status = this.body<Status>()
+            assertEquals(HttpStatusCode.Created, this.status)
 
-        assertEquals(
-            "Vehicle VAN is parked",
-            status.message,
-            message = "Expecting Customer stored correctly got ${status.message}"
-        )
-        assertTrue(message = "Should be later than $currentTime") { status.time > currentTime }
-        verify(exactly = 1) { LotManager.checkAvailibility(Kind.VAN) }
+            assertEquals(
+                "Vehicle VAN is parked",
+                status.message,
+                message = "Expecting Customer stored correctly got ${status.message}"
+            )
+            assertTrue(message = "Should be later than $currentTime") { status.time > currentTime }
+            //verify(exactly = 1) { lotManager!!.checkAvailibility(matchAnyKind()) }
+            lotManagerMockerVerifier(TestCase.LOTAVAILABLE, lotManager!!)
+        }
+
+    }
+
+    /**
+     * This is nominal test case for parking
+     * The parking lot is not available
+     */
+    @Test
+    fun testParkingNotAvailable() = testApplication {
+        lotManager = lotManagerMocker(TestCase.NOLOT)
+        application {
+            parkingLot { lotManager!! }
+        }
+        // LotManager.spotsLoader = spotLoader
+        val client = createClient {
+            install(ContentNegotiation) {
+                gson()
+            }
+        }
+        client.post("/parking") {
+            contentType(ContentType.Application.Json)
+            setBody(Vehicle(type = Kind.VAN))
+        }.apply {
+            val status = this.body<Status>()
+            assertEquals(HttpStatusCode.NotFound, this.status)
+
+            assertEquals(
+                "Cannot find spots for VAN",
+                status.message,
+                message = "Expecting Customer stored correctly got ${status.message}"
+            )
+            lotManagerMockerVerifier(TestCase.NOLOT, lotManager!!)
+        }
+
     }
 }

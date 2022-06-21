@@ -1,1 +1,1 @@
-rootProject.name = "atwin-rtc"
+rootProject.name = "parking-lot"
