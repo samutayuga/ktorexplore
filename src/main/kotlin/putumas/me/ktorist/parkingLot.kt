@@ -15,8 +15,8 @@ class LotManager {
         return false
     }
 
-    fun checkXAvailibility(type: Kind): Boolean {
-        return false
+    fun checkXAvailibility(type: Kind): Map<Kind, String> {
+        return mapOf()
     }
 
     fun park(type: Kind = Kind.VAN): Int {
