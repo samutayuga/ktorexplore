@@ -29,6 +29,7 @@ val lotManagerMocker: LotManagerMocker = {
         }
         else -> {
             every { lotManager.checkAvailibility(Kind.VAN) } returns true
+            every { lotManager.park(Kind.VAN) } returns 0
             lotManager
         }
 
@@ -42,6 +43,7 @@ val lotManagerMockerVerifier: LotManagerMockerVerifier = { testCase, lotManager 
         }
         else -> {
             verify(exactly = 1) { lotManager.checkAvailibility(Kind.VAN) }
+            verify(exactly = 1) { lotManager.park(Kind.VAN) }
         }
 
 
@@ -93,6 +95,7 @@ class ParkingLotTest {
                 message = "Expecting Customer stored correctly got ${status.message}"
             )
             assertTrue(message = "Should be later than $currentTime") { status.time > currentTime }
+            assertTrue(message = "Location should be 0 get ${status.location}") { 0 == status.location }
             //verify(exactly = 1) { lotManager!!.checkAvailibility(matchAnyKind()) }
             lotManagerMockerVerifier(TestCase.LOTAVAILABLE, lotManager!!)
         }

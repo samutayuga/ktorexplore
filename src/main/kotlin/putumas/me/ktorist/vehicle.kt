@@ -8,7 +8,8 @@ enum class Kind {
 
 data class Status(
     val message: String,
-    val time: Long
+    val location: Int = 0,
+    val time: Long = 0
 )
 
 data class Vehicle(
