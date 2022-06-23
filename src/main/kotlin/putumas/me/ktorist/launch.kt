@@ -23,9 +23,13 @@ fun main() {
         module {
 
             /**
-             * partking lot relies on underlying function to do the
-             * job. An that is to be a mock for the unit test
-             * So, we need to be able to make the
+             * parking lot relies on underlying function to do the
+             * job. The routing layer is separated with the business logic that implements
+             * the request. So as far as the routing unit test is a concern, we should be able
+             * to make the mock for the business logic.
+             * The following, parkingLot module accepts the ()->LotManager as an argument
+             * LotManager is a class that can be mocked during the unit test, thanks
+             * to Mockk
              */
             parkingLot { LotManager() }
         }
